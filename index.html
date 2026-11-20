@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ModoMestre — Régua Geométrica dos Modos Gregos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #070b14;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .font-mono-tech {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar for fretboard horizontal scroll on small phones */
+        .fretboard-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .fretboard-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 999px;
+        }
+        .fretboard-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 999px;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(245, 158, 11, 0.75); }
+            50% { transform: scale(1.08); box-shadow: 0 0 20px rgba(245, 158, 11, 1); }
+        }
+        .note-characteristic {
+            animation: pulseGlow 2.2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gradient-to-b from-[#070b14] via-[#0b1324] to-[#060912] pb-10">
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl px-3 sm:px-6 pt-4 space-y-4">
+
+        <!-- ========================================================= -->
+        <!-- HEADER & PEDAL POINT DRONE AUDIO CONTROLS                 -->
+        <!-- ========================================================= -->
+        <header class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400 shadow-[0_0_12px_#fbbf24]"></span>
+                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">
+                        Modo<span class="text-amber-400">Mestre</span> <span class="text-xs font-semibold text-slate-400 ml-1">Régua Geométrica</span>
+                    </h1>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">Escolha o <strong class="text-slate-200">Chefe (Pedal Point)</strong> e veja o movimento exato no braço sem fazer conta.</p>
+            </div>
+
+            <!-- Drone & Groove Audio Player -->
+            <div class="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                <button id="btnToggleDrone" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition active:scale-95">
+                    <svg id="droneIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="droneBtnText">Tocar Pedal + Base</span>
+                </button>
+                <button id="btnPlayScale" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-300 font-semibold text-xs transition active:scale-95" title="Ouvir a escala em velocidade normal">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    <span>Ouvir Escala</span>
+                </button>
+                <button id="btnPlayScaleSlow" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-purple-300 font-semibold text-xs transition active:scale-95" title="Ouvir a escala nota por nota bem devagar para estudar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Ouvir Lento</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ========================================================= -->
+        <!-- COMPACT WARM METRONOME & INDEPENDENT MIXER VOLUMES        -->
+        <!-- ========================================================= -->
+        <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl px-4 py-3 shadow-lg space-y-2.5">
+            <!-- Row 1: Metronome Controls & Metronome Volume -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <!-- Left: Play/Stop & Beat Dots -->
+                <div class="flex items-center gap-2.5">
+                    <button id="btnToggleMetro" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-300 font-bold text-xs transition active:scale-95">
+                        <span id="metroStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                        <span id="metroBtnLabel">Metrônomo</span>
+                    </button>
+
+                    <!-- Visual Beat Indicators -->
+                    <div id="metroBeatDots" class="flex items-center gap-1.5 px-1">
+                        <!-- Dots generated dynamically via JS -->
+                    </div>
+                </div>
+
+                <!-- Middle: BPM & Time Signature Controls -->
+                <div class="flex items-center gap-2 text-xs font-mono-tech">
+                    <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-1.5 py-1 gap-1">
+                        <button id="btnMetroBpmMinus" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold">-</button>
+                        <span class="px-1.5 text-slate-200 font-bold"><span id="metroBpmVal">96</span> <span class="text-[10px] text-slate-400">BPM</span></span>
+                        <button id="btnMetroBpmPlus" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold">+</button>
+                    </div>
+
+                    <select id="selectMetroTimeSig" title="Compasso do Metrônomo" class="bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs font-bold text-sky-300 focus:outline-none focus:border-sky-400">
+                        <option value="4" selected>4/4</option>
+                        <option value="3">3/4</option>
+                        <option value="5">5/4</option>
+                        <option value="6">6/8</option>
+                        <option value="7">7/8</option>
+                    </select>
+                </div>
+
+                <!-- Right: Metronome Volume -->
+                <div class="flex items-center gap-2 flex-1 sm:flex-initial min-w-[165px]">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 shrink-0">Vol. Metrônomo</span>
+                    <input id="sliderMetroVol" type="range" min="0" max="100" value="35" title="Volume do Metrônomo" class="w-full sm:w-24 accent-emerald-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg">
+                    <span id="metroVolText" class="text-[10px] font-mono-tech text-slate-400 w-8 text-right">35%</span>
+                </div>
+            </div>
+
+            <!-- Row 2: Dedicated Backing Base Volume & Scale/Fretboard Volume -->
+            <div class="pt-2 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Pedal + Base Volume -->
+                <div class="flex items-center gap-2 bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-1.5">
+                    <span class="text-[11px] font-bold text-amber-400 shrink-0 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        Vol. Base (Pedal):
+                    </span>
+                    <input id="sliderBaseVol" type="range" min="0" max="100" value="70" title="Volume do Pedal Point e Acordes de Base" class="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg">
+                    <span id="baseVolText" class="text-[10px] font-mono-tech text-slate-300 w-8 text-right">70%</span>
+                </div>
+
+                <!-- Scale & Fretboard Notes Volume -->
+                <div class="flex items-center gap-2 bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-1.5">
+                    <span class="text-[11px] font-bold text-sky-400 shrink-0 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                        Vol. Escala / Notas:
+                    </span>
+                    <input id="sliderScaleVol" type="range" min="0" max="100" value="80" title="Volume da Escala e das Notas no Braço" class="w-full accent-sky-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg">
+                    <span id="scaleVolText" class="text-[10px] font-mono-tech text-slate-300 w-8 text-right">80%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STEP 1 & 2: CHOOSE ROOT ("CHEFE") & GREEK MODE            -->
+        <!-- ========================================================= -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Step 1: Pedal Point Root & Anchor String -->
+            <div class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+                        1. Escolha o Chefe (Pedal Point)
+                    </h2>
+                    <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px]">
+                        <button id="btnString6" class="px-2.5 py-1 rounded-lg font-bold bg-sky-500 text-slate-950 transition">6ª Corda (E)</button>
+                        <button id="btnString5" class="px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition">5ª Corda (A)</button>
+                    </div>
+                </div>
+                <div id="rootNotesGrid" class="grid grid-cols-6 gap-1.5">
+                    <!-- 12 Chromatic Notes injected via JS -->
+                </div>
+            </div>
+
+            <!-- Step 2: Choose Greek Mode -->
+            <div class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-sky-400">
+                        2. Escolha o Modo Grego
+                    </h2>
+                    <span class="text-[10px] text-slate-400 font-mono-tech">Régua Fixa</span>
+                </div>
+                <div id="modesGrid" class="grid grid-cols-2 gap-2">
+                    <!-- 7 Greek Modes injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STEP 3: GEOMETRIC RULER EXPLANATION & BACKING CHORDS      -->
+        <!-- ========================================================= -->
+        <section class="bg-[#0f172a]/95 border border-amber-500/30 rounded-2xl p-4 shadow-xl space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">3. Régua Geométrica na Mão (Sem Conta)</span>
+                    <h2 id="rulerHeadline" class="text-base sm:text-lg font-extrabold text-white mt-0.5">
+                        B Mixolídio = 2 casas ATRÁS do Chefe
+                    </h2>
+                </div>
+                <span id="modeVibeTag" class="px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] font-bold">
+                    Rock / Blues / Baião
+                </span>
+            </div>
+
+            <p id="rulerExplanation" class="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                <!-- Dynamic geometric explanation injected via JS -->
+            </p>
+
+            <!-- 3 Quick Action Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div class="bg-slate-950/80 border border-emerald-500/30 rounded-xl p-3">
+                    <span class="text-[10px] font-bold uppercase text-emerald-400 block">Passo 1 • Onde Começar</span>
+                    <strong id="cardStep1" class="text-slate-100 font-mono-tech text-xs mt-1 block">B na Casa 7 (6ª corda)</strong>
+                </div>
+                <div class="bg-slate-950/80 border border-amber-500/30 rounded-xl p-3">
+                    <span class="text-[10px] font-bold uppercase text-amber-400 block">Passo 2 • Movimento da Régua</span>
+                    <strong id="cardStep2" class="text-slate-100 font-mono-tech text-xs mt-1 block">Recua 2 casas → Casa 5 (A)</strong>
+                </div>
+                <div class="bg-slate-950/80 border border-sky-500/30 rounded-xl p-3">
+                    <span class="text-[10px] font-bold uppercase text-sky-400 block">Passo 3 • Base Harmônica</span>
+                    <strong id="cardStep3" class="text-slate-100 font-mono-tech text-xs mt-1 block">B → A (ou B → A → E)</strong>
+                </div>
+            </div>
+
+            <!-- Parent Major Scale Shortcut Banner -->
+            <div class="bg-sky-500/10 border border-sky-500/25 rounded-xl px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                <span id="parentShapeTitle" class="font-bold text-sky-300">Shape de E Maior (Jônio)</span>
+                <span id="parentShapeDesc" class="text-[11px] text-slate-300">Toque as mesmas notas da escala de E Maior, mas comece e repouse no Chefe B.</span>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- STEP 4: INTERACTIVE GUITAR FRETBOARD VISUALIZER           -->
+        <!-- ========================================================= -->
+        <section class="bg-[#0f172a]/95 border border-slate-800 rounded-2xl p-4 shadow-2xl space-y-3">
+            <!-- Fretboard Header & Display Toggles -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <span>Braço da Guitarra Interativo</span>
+                        <span id="shapePositionBadge" class="text-[11px] font-mono-tech px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Comece na Casa 7
+                        </span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Toque em qualquer bolinha no braço para ouvir a nota e sentir a sonoridade do modo.</p>
+                </div>
+
+                <!-- Legend & View Mode -->
+                <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                    <span class="flex items-center gap-1 text-emerald-300 font-semibold">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block border border-white"></span> Chefe (Tônica)
+                    </span>
+                    <span class="flex items-center gap-1 text-amber-300 font-semibold">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block border border-white"></span> Nota do Modo
+                    </span>
+                    <span class="flex items-center gap-1 text-sky-300 font-semibold">
+                        <span class="w-3 h-3 rounded-full bg-sky-600 inline-block"></span> Escala
+                    </span>
+                    <button id="btnToggleDisplayMode" class="ml-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-mono-tech font-bold text-[10px]">
+                        Ver: Notas / Graus
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Fretboard Container -->
+            <div class="fretboard-scroll overflow-x-auto pb-2">
+                <div id="fretboardWrapper" class="min-w-[820px] bg-[#1a130e] border-2 border-[#3b2b20] rounded-xl p-3 relative shadow-inner">
+                    <!-- Fretboard rendered dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Geometric Ruler Bar directly beneath the anchor string -->
+            <div id="rulerVisualBar" class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs">
+                <!-- Visual arrow showing exact fret jump -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /**
+         * ModoMestre — Motor de Geometria dos Modos Gregos & Áudio WebAudio
+         */
+
+        // ==========================================
+        // 1. MUSICAL CONSTANTS & GREEK MODES DATA
+        // ==========================================
+        const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const NOTES_PT = {
+            'C': 'Dó', 'C#': 'Dó#', 'D': 'Ré', 'D#': 'Ré#', 'E': 'Mi', 'F': 'Fá',
+            'F#': 'Fá#', 'G': 'Sol', 'G#': 'Sol#', 'A': 'Lá', 'A#': 'Lá#', 'B': 'Si'
+        };
+
+        // Standard Guitar Tuning (MIDI numbers from 1st string high E to 6th string low E)
+        // String 1 (E4=64), String 2 (B3=59), String 3 (G3=55), String 4 (D3=50), String 5 (A2=45), String 6 (E2=40)
+        const STRINGS_INFO = [
+            { num: 1, name: '1ª (e)', openNoteIndex: 4,  midiBase: 64, gauge: 1.2 },
+            { num: 2, name: '2ª (B)', openNoteIndex: 11, midiBase: 59, gauge: 1.5 },
+            { num: 3, name: '3ª (G)', openNoteIndex: 7,  midiBase: 55, gauge: 1.9 },
+            { num: 4, name: '4ª (D)', openNoteIndex: 2,  midiBase: 50, gauge: 2.4 },
+            { num: 5, name: '5ª (A)', openNoteIndex: 9,  midiBase: 45, gauge: 3.0 },
+            { num: 6, name: '6ª (E)', openNoteIndex: 4,  midiBase: 40, gauge: 3.6 }
+        ];
+
+        const INLAY_FRETS = [3, 5, 7, 9, 12, 15];
+
+        // The 7 Greek Modes with Geometric Ruler Rules relative to the Root ("Chefe")
+        const GREEK_MODES = [
+            {
+                id: 'mixolydian',
+                name: 'Mixolídio',
+                quality: 'Maior com 7ª menor (b7)',
+                vibe: 'Rock / Blues / Baião',
+                intervals: [0, 2, 4, 5, 7, 9, 10],
+                degreeLabels: ['1', '2', '3', '4', '5', '6', 'b7'],
+                charInterval: 10, // b7
+                rulerOffset: -2,  // 2 casas ATRÁS na mesma corda!
+                rulerActionText: '2 casas ATRÁS do Chefe',
+                parentOffset: 5,  // Parent Major scale root is 5 semitones up (or 7 down)
+                chordFormula: (r, charNote, fifth, fourth) => `${r} → ${charNote} (ou ${r} → ${charNote} → ${fourth})`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `Você está na casa <strong>${fret} (${r})</strong> na ${strName}. Recue <strong>2 casas para trás</strong> na mesma corda (${fret} - 2 = <strong>casa ${charFret}</strong>) e você cai direto no <strong>${charNote}</strong>! Use o acorde de <strong>${charNote}</strong> na base para soar 100% ${r} Mixolídio.`
+            },
+            {
+                id: 'dorian',
+                name: 'Dórico',
+                quality: 'Menor com 6ª maior (6)',
+                vibe: 'Santana / Funk / Fusion',
+                intervals: [0, 2, 3, 5, 7, 9, 10],
+                degreeLabels: ['1', '2', 'b3', '4', '5', '6', 'b7'],
+                charInterval: 9,  // Major 6th
+                rulerOffset: -3,  // 3 casas ATRÁS (ou 1 corda abaixo, 2 casas à frente)
+                rulerActionText: '3 casas ATRÁS do Chefe (6ª Maior)',
+                parentOffset: 10,
+                chordFormula: (r, charNote, fifth, fourth) => `${r}m → ${fourth} (ou ${r}m7 → ${fourth}7)`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `Saia do Chefe <strong>${r} (casa ${fret})</strong> e recue <strong>3 casas para trás</strong> na mesma corda (<strong>casa ${charFret} = ${charNote}</strong>). Essa nota dá o brilho sofisticado do Dórico. Na base, alterne <strong>${r}m</strong> com o acorde maior do IV grau (<strong>${fourthName(r)}</strong>).`
+            },
+            {
+                id: 'lydian',
+                name: 'Lídio',
+                quality: 'Maior com 4ª aumentada (#4)',
+                vibe: 'Satriani / Steve Vai / Épico',
+                intervals: [0, 2, 4, 6, 7, 9, 11],
+                degreeLabels: ['1', '2', '3', '#4', '5', '6', '7'],
+                charInterval: 6,  // #4
+                rulerOffset: +2,  // 2 casas À FRENTE (acorde maior II grau!)
+                rulerActionText: '2 casas À FRENTE (Acorde Maior II)',
+                parentOffset: 7,
+                chordFormula: (r, charNote, fifth, fourth) => `${r} → ${secondNote(r)} (Acorde Maior 2 casas à frente!)`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `A régua mais mágica da guitarra: pegue o Chefe <strong>${r} (casa ${fret})</strong>, avance <strong>2 casas à frente</strong> (<strong>casa ${fret + 2} = ${secondNote(r)}</strong>) e toque um acorde MAIOR lá! Dentro desse acorde mora a nota <strong>${charNote} (#4)</strong>, que traz aquela sonoridade espacial de trilha sonora.`
+            },
+            {
+                id: 'phrygian',
+                name: 'Frígio',
+                quality: 'Menor com 2ª menor (b2)',
+                vibe: 'Metal / Flamenco / Sombrio',
+                intervals: [0, 1, 3, 5, 7, 8, 10],
+                degreeLabels: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'],
+                charInterval: 1,  // b2
+                rulerOffset: +1,  // 1 casa À FRENTE do Chefe!
+                rulerActionText: '1 casa À FRENTE do Chefe (b2)',
+                parentOffset: 8,
+                chordFormula: (r, charNote) => `${r}m → ${charNote} (Acorde Maior 1 casa à frente!)`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `Sem segredo: do Chefe <strong>${r} (casa ${fret})</strong>, deslize apenas <strong>1 casa à frente</strong> (<strong>casa ${charFret} = ${charNote}</strong>). Esse choque de meio-tom cria imediatamente a tensão Flamenco/Metal. Alterne o acorde <strong>${r}m</strong> com <strong>${charNote} maior</strong>.`
+            },
+            {
+                id: 'aeolian',
+                name: 'Eólio (Menor Natural)',
+                quality: 'Menor Natural (b3, b6, b7)',
+                vibe: 'Rock Clássico / Baladas / Metal',
+                intervals: [0, 2, 3, 5, 7, 8, 10],
+                degreeLabels: ['1', '2', 'b3', '4', '5', 'b6', 'b7'],
+                charInterval: 8,  // b6
+                rulerOffset: +3,  // 3 casas À FRENTE (Relativa Maior!)
+                rulerActionText: '3 casas À FRENTE = Relativa Maior',
+                parentOffset: 3,
+                chordFormula: (r, charNote, fifth, fourth, relMajor) => `${r}m → ${charNote} → ${b7Note(r)} (ou ${r}m → ${relMajor})`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `Do Chefe <strong>${r} (casa ${fret})</strong>, avance <strong>3 casas à frente</strong> (<strong>casa ${fret + 3} = ${relMajorName(r)}</strong>) para achar o shape Maior equivalente, ou recue 4 casas para achar a <strong>6ª menor (${charNote})</strong> na casa ${charFret}.`
+            },
+            {
+                id: 'ionian',
+                name: 'Jônio (Maior Natural)',
+                quality: 'Escala Maior Padrão (1 2 3 4 5 6 7)',
+                vibe: 'Pop / Feliz / Resolvido',
+                intervals: [0, 2, 4, 5, 7, 9, 11],
+                degreeLabels: ['1', '2', '3', '4', '5', '6', '7'],
+                charInterval: 11, // 7M
+                rulerOffset: -1,  // 1 casa ATRÁS (7ª Maior)
+                rulerActionText: '1 casa ATRÁS = Sensível (7M)',
+                parentOffset: 0,
+                chordFormula: (r, charNote, fifth, fourth) => `${r} → ${fourth} → ${fifth}`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `O ponto de partida de tudo! O Chefe <strong>${r}</strong> está na <strong>casa ${fret}</strong>. Apenas <strong>1 casa atrás</strong> (<strong>casa ${charFret} = ${charNote}</strong>) está a 7ª maior que puxa de volta para o repouso total em <strong>${r}</strong>.`
+            },
+            {
+                id: 'locrian',
+                name: 'Lócrio',
+                quality: 'Meio-Diminuto (b2, b3, b5, b6, b7)',
+                vibe: 'Tensão Extrema / Jazz / Metal Extremo',
+                intervals: [0, 1, 3, 5, 6, 8, 10],
+                degreeLabels: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'],
+                charInterval: 6,  // b5 (tritone)
+                rulerOffset: +1,  // 1 casa À FRENTE = Shape Pai Maior!
+                rulerActionText: '1 casa À FRENTE = Shape Pai Maior',
+                parentOffset: 1,
+                chordFormula: (r, charNote) => `${r}m7(b5) → ${secondFlatNote(r)}maj7`,
+                tip: (r, fret, strName, charNote, charFret) =>
+                    `Super fácil de visualizar: o shape inteiro do Lócrio é igual ao da escala Maior apenas <strong>1 casa à frente</strong> (<strong>${secondFlatNote(r)} Maior</strong>), mas mantendo o Chefe <strong>${r} (casa ${fret})</strong> como pedal grave com a 5ª diminuta (<strong>${charNote}</strong>) tensionando.`
+            }
+        ];
+
+        // Helper Note Math Functions
+        function getNoteIndex(noteName) {
+            return NOTES.indexOf(noteName);
+        }
+        function noteAtOffset(rootName, semitones) {
+            const idx = (getNoteIndex(rootName) + semitones + 120) % 12;
+            return NOTES[idx];
+        }
+        function fourthName(r) { return noteAtOffset(r, 5); }
+        function fifthName(r) { return noteAtOffset(r, 7); }
+        function secondNote(r) { return noteAtOffset(r, 2); }
+        function secondFlatNote(r) { return noteAtOffset(r, 1); }
+        function b7Note(r) { return noteAtOffset(r, 10); }
+        function relMajorName(r) { return noteAtOffset(r, 3); }
+        function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+        // ==========================================
+        // 2. APPLICATION STATE (DEFAULT: B MIXOLYDIAN ON 6TH STRING FRET 7)
+        // ==========================================
+        let selectedRoot = 'B';         // Default matches user's example: B (Si)
+        let anchorString = 6;           // 6 = 6th string (E), 5 = 5th string (A)
+        let selectedModeId = 'mixolydian'; // Default matches user's example: Mixolydian
+        let showDegrees = false;        // Toggle between Note Names (B, C#, A) and Degrees (1, 2, b7)
+
+        // Web Audio Drone & Guitar Pluck State
+        let audioCtx = null;
+        let isDronePlaying = false;
+        let droneInterval = null;
+        let droneStep = 0;
+        let baseVolume = 0.70;
+        let scaleVolume = 0.80;
+        let scalePlayTimers = [];
+
+        // Warm Woodblock Metronome State
+        let isMetroPlaying = false;
+        let metroBpm = 96;
+        let metroBeats = 4;
+        let metroVolume = 0.35;
+        let metroCurrentBeat = 0;
+        let metroTimer = null;
+
+        // ==========================================
+        // 3. AUDIO ENGINE (WARM GUITAR PLUCK + PEDAL POINT BACKING)
+        // ==========================================
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioCtx();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        /**
+         * Soft, warm wooden percussion click (low-passed woodblock/rim)
+         * Designed to sit comfortably underneath guitar practice without ear fatigue.
+         */
+        function playWarmMetronomeClick(isDownbeat) {
+            if (metroVolume <= 0.01) return;
+            ensureAudio();
+            const now = audioCtx.currentTime;
+
+            const osc = audioCtx.createOscillator();
+            const subOsc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            // Warm mellow frequencies (not piercing high beeps)
+            const baseFreq = isDownbeat ? 520 : 370;
+            osc.type = 'sine';
+            subOsc.type = 'triangle';
+
+            osc.frequency.setValueAtTime(baseFreq * 1.18, now);
+            osc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.018);
+
+            subOsc.frequency.setValueAtTime(baseFreq * 0.5, now);
+
+            // Lowpass filter removes any harsh click edge
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(isDownbeat ? 1150 : 880, now);
+            filter.Q.setValueAtTime(1.1, now);
+
+            const peakGain = (isDownbeat ? 0.32 : 0.20) * metroVolume;
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(peakGain, now + 0.004);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+
+            const subGain = audioCtx.createGain();
+            subGain.gain.setValueAtTime(0.45, now);
+
+            osc.connect(filter);
+            subOsc.connect(subGain);
+            subGain.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            subOsc.start(now);
+            osc.stop(now + 0.085);
+            subOsc.stop(now + 0.085);
+        }
+
+        function renderMetroBeatDots() {
+            const container = document.getElementById('metroBeatDots');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < metroBeats; i++) {
+                const dot = document.createElement('span');
+                const isActive = isMetroPlaying && i === metroCurrentBeat;
+                const isFirst = i === 0;
+                dot.className = isActive
+                    ? (isFirst
+                        ? 'w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24] scale-110 transition-transform'
+                        : 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scale-110 transition-transform')
+                    : 'w-2 h-2 rounded-full bg-slate-700 transition-transform';
+                container.appendChild(dot);
+            }
+        }
+
+        function scheduleMetronomeLoop() {
+            if (!isMetroPlaying) return;
+            const isDownbeat = metroCurrentBeat === 0;
+            playWarmMetronomeClick(isDownbeat);
+            renderMetroBeatDots();
+
+            metroCurrentBeat = (metroCurrentBeat + 1) % metroBeats;
+            const intervalMs = 60000 / metroBpm;
+            metroTimer = setTimeout(scheduleMetronomeLoop, intervalMs);
+        }
+
+        function toggleMetronome() {
+            ensureAudio();
+            const btn = document.getElementById('btnToggleMetro');
+            const dot = document.getElementById('metroStatusDot');
+
+            if (isMetroPlaying) {
+                isMetroPlaying = false;
+                clearTimeout(metroTimer);
+                btn.classList.remove('border-emerald-400', 'bg-emerald-500/20');
+                dot.className = 'w-2 h-2 rounded-full bg-slate-500';
+                renderMetroBeatDots();
+                return;
+            }
+
+            isMetroPlaying = true;
+            metroCurrentBeat = 0;
+            btn.classList.add('border-emerald-400', 'bg-emerald-500/20');
+            dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            scheduleMetronomeLoop();
+        }
+
+        function playGuitarNote(midi, duration = 1.1, volume = 0.25, channel = 'scale') {
+            const channelGain = channel === 'base' ? baseVolume : scaleVolume;
+            const effectiveVolume = volume * channelGain;
+            if (effectiveVolume <= 0.002) return;
+
+            ensureAudio();
+            const now = audioCtx.currentTime;
+            const freq = midiToFreq(midi);
+
+            // Warm electric/acoustic guitar harmonic blend
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            osc1.type = 'triangle';
+            osc2.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(freq, now);
+            osc2.frequency.setValueAtTime(freq, now);
+
+            const osc2Gain = audioCtx.createGain();
+            osc2Gain.gain.setValueAtTime(0.28, now);
+
+            // Pluck lowpass filter envelope
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(freq * 5.5, now);
+            filter.frequency.exponentialRampToValueAtTime(freq * 1.4, now + duration * 0.7);
+            filter.Q.setValueAtTime(1.2, now);
+
+            const env = audioCtx.createGain();
+            env.gain.setValueAtTime(0.001, now);
+            env.gain.linearRampToValueAtTime(effectiveVolume, now + 0.015);
+            env.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc1.connect(filter);
+            osc2.connect(osc2Gain);
+            osc2Gain.connect(filter);
+            filter.connect(env);
+            env.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + duration + 0.05);
+            osc2.stop(now + duration + 0.05);
+        }
+
+        function getAnchorRootMidi() {
+            const rootIdx = getNoteIndex(selectedRoot);
+            if (anchorString === 6) {
+                // E2 = 40 -> F2=41 ... B2=47 ... E3=52
+                let fret = (rootIdx - 4 + 12) % 12;
+                if (fret === 0) fret = 12; // Use fret 12 for E so geometric back-steps work cleanly
+                return { midi: 40 + fret, fret };
+            } else {
+                // A2 = 45 -> B2=47 ... E3=52 ... A3=57
+                let fret = (rootIdx - 9 + 12) % 12;
+                if (fret === 0) fret = 12;
+                return { midi: 45 + fret, fret };
+            }
+        }
+
+        function togglePedalDrone() {
+            ensureAudio();
+            const btn = document.getElementById('btnToggleDrone');
+            const label = document.getElementById('droneBtnText');
+            const icon = document.getElementById('droneIcon');
+
+            if (isDronePlaying) {
+                isDronePlaying = false;
+                clearInterval(droneInterval);
+                btn.classList.remove('bg-rose-500', 'text-white');
+                btn.classList.add('bg-amber-500', 'text-slate-950');
+                label.textContent = 'Tocar Pedal + Base';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+                return;
+            }
+
+            isDronePlaying = true;
+            droneStep = 0;
+            btn.classList.remove('bg-amber-500', 'text-slate-950');
+            btn.classList.add('bg-rose-500', 'text-white');
+            label.textContent = 'Parar Base';
+            icon.innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2"/>';
+
+            const triggerGrooveStep = () => {
+                if (!isDronePlaying) return;
+                const mode = GREEK_MODES.find(m => m.id === selectedModeId);
+                const { midi: rootMidi } = getAnchorRootMidi();
+                const isMinor = mode.intervals.includes(3);
+                const thirdInterval = isMinor ? 3 : 4;
+                const fifthInterval = mode.intervals.includes(6) && !mode.intervals.includes(7) ? 6 : 7;
+
+                // Always keep the Root Pedal Point thumping on the low string!
+                playGuitarNote(rootMidi, 0.9, 0.34, 'base');
+
+                if (droneStep % 4 === 0) {
+                    // Root chord stab
+                    playGuitarNote(rootMidi + 12, 0.85, 0.18, 'base');
+                    playGuitarNote(rootMidi + 12 + thirdInterval, 0.85, 0.15, 'base');
+                    playGuitarNote(rootMidi + 12 + fifthInterval, 0.85, 0.15, 'base');
+                } else if (droneStep % 4 === 2) {
+                    // Characteristic modal color chord over the pedal point!
+                    const charMidi = rootMidi + 12 + mode.charInterval;
+                    playGuitarNote(charMidi, 0.85, 0.20, 'base');
+                    playGuitarNote(rootMidi + 12 + fifthInterval, 0.85, 0.14, 'base');
+                }
+                droneStep++;
+            };
+
+            triggerGrooveStep();
+            droneInterval = setInterval(triggerGrooveStep, 620);
+        }
+
+        function playModeScaleSequence(stepDelayMs = 260, noteDuration = 0.65) {
+            ensureAudio();
+            // Clear any previously running scale playback timers
+            scalePlayTimers.forEach(t => clearTimeout(t));
+            scalePlayTimers = [];
+
+            const mode = GREEK_MODES.find(m => m.id === selectedModeId);
+            const { midi: rootMidi } = getAnchorRootMidi();
+            const seq = [...mode.intervals, 12];
+
+            seq.forEach((interval, idx) => {
+                const timer = setTimeout(() => {
+                    const isRootOrOctave = idx === 0 || idx === 7;
+                    const isChar = interval === mode.charInterval;
+                    const baseNoteVol = isRootOrOctave ? 0.36 : (isChar ? 0.34 : 0.26);
+                    playGuitarNote(rootMidi + interval, noteDuration, baseNoteVol, 'scale');
+                }, idx * stepDelayMs);
+                scalePlayTimers.push(timer);
+            });
+        }
+
+        // ==========================================
+        // 4. UI RENDERING (ROOTS, MODES, GEOMETRIC RULER & FRETBOARD)
+        // ==========================================
+        function renderRootButtons() {
+            const container = document.getElementById('rootNotesGrid');
+            container.innerHTML = '';
+
+            NOTES.forEach(note => {
+                const isSelected = note === selectedRoot;
+                const btn = document.createElement('button');
+                btn.className = isSelected
+                    ? 'py-2 rounded-xl bg-emerald-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/30 border border-emerald-300 transition flex flex-col items-center'
+                    : 'py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs border border-slate-800 transition flex flex-col items-center';
+
+                btn.innerHTML = `
+                    <span class="font-mono-tech text-sm leading-none">${note}</span>
+                    <span class="text-[9px] font-medium opacity-75 mt-0.5">${NOTES_PT[note]}</span>
+                `;
+                btn.onclick = () => {
+                    selectedRoot = note;
+                    const { midi } = getAnchorRootMidi();
+                    playGuitarNote(midi, 0.7, 0.28, 'scale');
+                    updateAllUI();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderModeCards() {
+            const container = document.getElementById('modesGrid');
+            container.innerHTML = '';
+
+            GREEK_MODES.forEach(mode => {
+                const isSelected = mode.id === selectedModeId;
+                const card = document.createElement('button');
+                card.className = isSelected
+                    ? 'p-2.5 rounded-xl bg-sky-500/20 border-2 border-sky-400 text-left shadow-lg shadow-sky-500/15 transition flex flex-col justify-between'
+                    : 'p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-left transition flex flex-col justify-between';
+
+                const offsetLabel = mode.rulerOffset > 0 ? `+${mode.rulerOffset} casas` : `${mode.rulerOffset} casas`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-xs font-extrabold ${isSelected ? 'text-white' : 'text-slate-200'}">${mode.name}</span>
+                        <span class="text-[10px] font-mono-tech font-bold px-1.5 py-0.5 rounded ${isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-amber-400'}">${offsetLabel}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 mt-1 line-clamp-1">${mode.quality}</span>
+                `;
+                card.onclick = () => {
+                    selectedModeId = mode.id;
+                    updateAllUI();
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function renderGeometricRulerCard() {
+            const mode = GREEK_MODES.find(m => m.id === selectedModeId);
+            const { fret: rootFret } = getAnchorRootMidi();
+            const strLabel = anchorString === 6 ? '6ª corda' : '5ª corda';
+
+            // Calculate characteristic note and its exact fret on the anchor string
+            const charNote = noteAtOffset(selectedRoot, mode.charInterval);
+            let charFret = rootFret + mode.rulerOffset;
+            if (charFret < 0) charFret += 12;
+            const targetNoteOnRuler = noteAtOffset(selectedRoot, mode.rulerOffset);
+
+            const parentRoot = noteAtOffset(selectedRoot, mode.parentOffset);
+            const fourth = fourthName(selectedRoot);
+            const fifth = fifthName(selectedRoot);
+            const relMaj = relMajorName(selectedRoot);
+
+            document.getElementById('modeVibeTag').textContent = mode.vibe;
+            document.getElementById('rulerHeadline').textContent = `${selectedRoot} ${mode.name} = ${mode.rulerActionText}`;
+
+            document.getElementById('rulerExplanation').innerHTML = mode.tip(
+                selectedRoot,
+                rootFret,
+                strLabel,
+                targetNoteOnRuler,
+                charFret
+            );
+
+            // 3-step summary cards
+            document.getElementById('cardStep1').textContent = `${selectedRoot} na Casa ${rootFret} (${strLabel})`;
+
+            const directionWord = mode.rulerOffset < 0
+                ? `Recua ${Math.abs(mode.rulerOffset)} casa${Math.abs(mode.rulerOffset) > 1 ? 's' : ''}`
+                : `Avança ${mode.rulerOffset} casa${mode.rulerOffset > 1 ? 's' : ''}`;
+            document.getElementById('cardStep2').textContent = `${directionWord} → Casa ${charFret} (${targetNoteOnRuler})`;
+
+            document.getElementById('cardStep3').textContent = mode.chordFormula(selectedRoot, targetNoteOnRuler, fifth, fourth, relMaj);
+
+            // Parent Major Shape shortcut
+            document.getElementById('parentShapeTitle').textContent = `Shape de ${parentRoot} Maior (Jônio)`;
+            document.getElementById('parentShapeDesc').textContent =
+                `Toque as mesmas notas da escala de ${parentRoot} Maior, mas comece, acentue e repouse sempre no Chefe ${selectedRoot} (casa ${rootFret}).`;
+
+            document.getElementById('shapePositionBadge').textContent = `Comece na Casa ${rootFret} (${strLabel})`;
+
+            // Visual Ruler Bar below Fretboard
+            const rulerBar = document.getElementById('rulerVisualBar');
+            const arrow = mode.rulerOffset < 0 ? '⬅️ RECUAR' : 'AVANÇAR ➡️';
+            rulerBar.innerHTML = `
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono-tech font-bold">
+                        CHEFE: ${selectedRoot} (Casa ${rootFret})
+                    </span>
+                    <span class="font-mono-tech font-extrabold text-amber-400">
+                        ${arrow} ${Math.abs(mode.rulerOffset)} ${Math.abs(mode.rulerOffset) === 1 ? 'casa' : 'casas'} na ${strLabel}
+                    </span>
+                    <span class="px-2 py-1 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-300 font-mono-tech font-bold">
+                        ALVO DO MODO: ${targetNoteOnRuler} (Casa ${charFret})
+                    </span>
+                </div>
+                <span class="hidden sm:inline text-[11px] text-slate-400 font-mono-tech">
+                    Notas: ${mode.intervals.map(iv => noteAtOffset(selectedRoot, iv)).join(' - ')}
+                </span>
+            `;
+        }
+
+        function renderFretboard() {
+            const wrapper = document.getElementById('fretboardWrapper');
+            wrapper.innerHTML = '';
+
+            const mode = GREEK_MODES.find(m => m.id === selectedModeId);
+            const rootIdx = getNoteIndex(selectedRoot);
+            const { fret: anchorRootFret } = getAnchorRootMidi();
+
+            // Build a map of interval -> degreeLabel
+            const scaleMap = {};
+            mode.intervals.forEach((iv, i) => {
+                scaleMap[iv] = mode.degreeLabels[i];
+            });
+
+            // Highlight box window (3-notes-per-string / CAGED position starting around anchorRootFret)
+            const boxStartFret = Math.max(0, anchorRootFret - 1);
+            const boxEndFret = Math.min(15, anchorRootFret + 4);
+
+            // 1. Fret Numbers Header Row (0 to 15)
+            const fretNumbersRow = document.createElement('div');
+            fretNumbersRow.className = 'grid grid-cols-[46px_repeat(16,minmax(0,1fr))] mb-1.5 text-center font-mono-tech text-[10px]';
+            fretNumbersRow.innerHTML = `<div class="text-slate-500 font-bold">CORDA</div>`;
+
+            for (let f = 0; f <= 15; f++) {
+                const isRootFret = f === anchorRootFret;
+                const isInlay = INLAY_FRETS.includes(f);
+                const cell = document.createElement('div');
+                cell.className = isRootFret
+                    ? 'font-extrabold text-emerald-400 bg-emerald-500/20 rounded py-0.5'
+                    : (isInlay ? 'font-bold text-amber-400/90 py-0.5' : 'text-slate-500 py-0.5');
+                cell.textContent = f;
+                fretNumbersRow.appendChild(cell);
+            }
+            wrapper.appendChild(fretNumbersRow);
+
+            // 2. Render 6 Guitar Strings
+            STRINGS_INFO.forEach(str => {
+                const row = document.createElement('div');
+                const isAnchorStr = str.num === anchorString;
+                row.className = `grid grid-cols-[46px_repeat(16,minmax(0,1fr))] items-center h-9 relative ${isAnchorStr ? 'bg-amber-500/10 rounded-lg' : ''}`;
+
+                // String Label
+                const strLabel = document.createElement('div');
+                strLabel.className = `text-[11px] font-mono-tech font-bold pr-1.5 text-right ${isAnchorStr ? 'text-amber-300' : 'text-slate-400'}`;
+                strLabel.textContent = str.name;
+                row.appendChild(strLabel);
+
+                // Frets 0 to 15
+                for (let f = 0; f <= 15; f++) {
+                    const fretCell = document.createElement('div');
+                    const isNut = f === 0;
+                    const inMainShape = f >= boxStartFret && f <= boxEndFret;
+
+                    fretCell.className = `h-full flex items-center justify-center relative ${
+                        isNut
+                            ? 'border-r-4 border-slate-300 bg-slate-900/60'
+                            : 'border-r border-[#4a3728]'
+                    } ${inMainShape && !isNut ? 'bg-sky-500/[0.06]' : ''}`;
+
+                    // Fretboard Inlay Dot on 3rd/4th string center
+                    if (str.num === 3 && INLAY_FRETS.includes(f)) {
+                        const inlay = document.createElement('div');
+                        inlay.className = f === 12
+                            ? 'w-2 h-2 rounded-full bg-amber-200/20 absolute -bottom-1 pointer-events-none'
+                            : 'w-2.5 h-2.5 rounded-full bg-amber-200/20 absolute -bottom-1.5 pointer-events-none';
+                        fretCell.appendChild(inlay);
+                    }
+
+                    // Metallic Guitar String Wire
+                    const wire = document.createElement('div');
+                    wire.style.height = `${str.gauge}px`;
+                    wire.className = `w-full absolute left-0 pointer-events-none ${
+                        isAnchorStr ? 'bg-amber-300/70' : 'bg-gradient-to-b from-slate-300/60 to-slate-500/60'
+                    }`;
+                    fretCell.appendChild(wire);
+
+                    // Calculate Note & Scale Membership
+                    const currentNoteIdx = (str.openNoteIndex + f) % 12;
+                    const noteName = NOTES[currentNoteIdx];
+                    const intervalFromRoot = (currentNoteIdx - rootIdx + 12) % 12;
+
+                    if (scaleMap.hasOwnProperty(intervalFromRoot)) {
+                        const isRoot = intervalFromRoot === 0;
+                        const isChar = intervalFromRoot === mode.charInterval;
+                        const isAnchorStart = isAnchorStr && f === anchorRootFret;
+
+                        const noteBtn = document.createElement('button');
+                        let styleClass = '';
+                        if (isRoot) {
+                            styleClass = isAnchorStart
+                                ? 'bg-emerald-500 text-slate-950 font-extrabold ring-2 ring-white scale-110 shadow-[0_0_14px_#10b981]'
+                                : 'bg-emerald-600/95 text-white font-extrabold border border-emerald-200';
+                        } else if (isChar) {
+                            styleClass = 'bg-amber-500 text-slate-950 font-extrabold border border-white note-characteristic';
+                        } else {
+                            styleClass = inMainShape
+                                ? 'bg-sky-600 text-white font-bold border border-sky-300/80'
+                                : 'bg-slate-800/90 text-slate-300 font-semibold border border-slate-600 opacity-75 hover:opacity-100';
+                        }
+
+                        noteBtn.className = `w-6 h-6 sm:w-7 sm:h-7 rounded-full text-[10px] font-mono-tech flex items-center justify-center relative z-10 transition hover:scale-110 active:scale-95 ${styleClass}`;
+                        noteBtn.textContent = showDegrees ? scaleMap[intervalFromRoot] : noteName;
+                        noteBtn.title = `${noteName} (${NOTES_PT[noteName]}) — Grau ${scaleMap[intervalFromRoot]} — Casa ${f}`;
+
+                        noteBtn.onclick = () => {
+                            playGuitarNote(str.midiBase + f, 0.85, 0.32, 'scale');
+                        };
+
+                        fretCell.appendChild(noteBtn);
+                    }
+
+                    row.appendChild(fretCell);
+                }
+
+                wrapper.appendChild(row);
+            });
+        }
+
+        function updateAllUI() {
+            renderRootButtons();
+            renderModeCards();
+            renderGeometricRulerCard();
+            renderFretboard();
+        }
+
+        // ==========================================
+        // 5. EVENT LISTENERS & BOOTSTRAP
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAllUI();
+
+            // Anchor String Toggle (6th vs 5th string)
+            const btnStr6 = document.getElementById('btnString6');
+            const btnStr5 = document.getElementById('btnString5');
+
+            btnStr6.addEventListener('click', () => {
+                anchorString = 6;
+                btnStr6.className = 'px-2.5 py-1 rounded-lg font-bold bg-sky-500 text-slate-950 transition';
+                btnStr5.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition';
+                updateAllUI();
+            });
+
+            btnStr5.addEventListener('click', () => {
+                anchorString = 5;
+                btnStr5.className = 'px-2.5 py-1 rounded-lg font-bold bg-sky-500 text-slate-950 transition';
+                btnStr6.className = 'px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-white transition';
+                updateAllUI();
+            });
+
+            // Toggle Notes vs Degrees on Fretboard
+            document.getElementById('btnToggleDisplayMode').addEventListener('click', (e) => {
+                showDegrees = !showDegrees;
+                e.target.textContent = showDegrees ? 'Ver: Graus (1, b7)' : 'Ver: Notas (B, A)';
+                renderFretboard();
+            });
+
+            // Audio Controls
+            document.getElementById('btnToggleDrone').addEventListener('click', togglePedalDrone);
+            document.getElementById('btnPlayScale').addEventListener('click', () => playModeScaleSequence(260, 0.65));
+            document.getElementById('btnPlayScaleSlow').addEventListener('click', () => playModeScaleSequence(620, 1.15));
+
+            // Independent Mix Sliders (Base & Scale)
+            document.getElementById('sliderBaseVol').addEventListener('input', (e) => {
+                const val = parseInt(e.target.value, 10);
+                baseVolume = val / 100;
+                document.getElementById('baseVolText').textContent = `${val}%`;
+            });
+
+            document.getElementById('sliderScaleVol').addEventListener('input', (e) => {
+                const val = parseInt(e.target.value, 10);
+                scaleVolume = val / 100;
+                document.getElementById('scaleVolText').textContent = `${val}%`;
+            });
+
+            // Metronome Controls
+            renderMetroBeatDots();
+            document.getElementById('btnToggleMetro').addEventListener('click', toggleMetronome);
+
+            document.getElementById('btnMetroBpmMinus').addEventListener('click', () => {
+                metroBpm = Math.max(40, metroBpm - 2);
+                document.getElementById('metroBpmVal').textContent = metroBpm;
+            });
+
+            document.getElementById('btnMetroBpmPlus').addEventListener('click', () => {
+                metroBpm = Math.min(220, metroBpm + 2);
+                document.getElementById('metroBpmVal').textContent = metroBpm;
+            });
+
+            document.getElementById('selectMetroTimeSig').addEventListener('change', (e) => {
+                metroBeats = parseInt(e.target.value, 10);
+                metroCurrentBeat = 0;
+                renderMetroBeatDots();
+            });
+
+            document.getElementById('sliderMetroVol').addEventListener('input', (e) => {
+                const val = parseInt(e.target.value, 10);
+                metroVolume = val / 100;
+                document.getElementById('metroVolText').textContent = `${val}%`;
+            });
+        });
+    </script>
+</body>
+</html>
